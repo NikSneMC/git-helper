@@ -8,7 +8,7 @@ rustPlatform.buildRustPackage {
   pname = "git-helper";
   version = "0.1.0";
   src = ../.;
-  cargoHash = "sha256-KrtS2Jeeum8WkJDGZJzG+p9spuCWutFuzcoQgmhfiwM=";
+  cargoHash = "sha256-uzvm3jSkw1bmmja8koLzAbFDR2ei1ARDHyIpChK+JtQ=";
   buildInputs = [openssl];
   nativeBuildInputs = [pkg-config];
   useFetchCargoVendor = true;
