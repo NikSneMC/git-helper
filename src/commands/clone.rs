@@ -51,6 +51,10 @@ impl Command for CloneOptions {
         rb.clone(&url, &repo_path)
             .expect("Repo to be cloned successfully");
 
+        env::set_current_dir(&repo_path).unwrap();
+        profile.apply().expect("Config mutation to be successfull");
+        env::set_current_dir(&current_dir).unwrap();
+
         println!("Repository `{repo_name}` was cloned successfully");
     }
 }
