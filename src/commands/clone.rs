@@ -45,9 +45,12 @@ impl Command for CloneOptions {
 
         let url = CloneUrl::from_param(self.url.clone()).0;
         let current_dir = env::current_dir().expect("Current dir to be valid");
-        let repo_path = current_dir.join(url.split("/").last().unwrap());
+        let repo_name = url.split("/").last().unwrap().split(".git").next().unwrap();
+        let repo_path = current_dir.join(repo_name);
 
         rb.clone(&url, &repo_path)
             .expect("Repo to be cloned successfully");
+
+        println!("Repository `{repo_name}` was cloned successfully");
     }
 }
