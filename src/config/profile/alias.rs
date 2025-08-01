@@ -15,7 +15,7 @@ impl Display for ProfileAlias {
 impl ProfileAlias {
     pub fn from_str(s: &str, config: &Config, check: bool) -> Result<Self, String> {
         if s.is_empty() {
-            return Err("Profile name couldn't be empty".to_string());
+            return Err("Profile name can't be empty".to_string());
         }
         if check && config.profiles.contains_key(&Self(s.to_string())) {
             return Err(format!("Profile with name `{s}` already exists"));
