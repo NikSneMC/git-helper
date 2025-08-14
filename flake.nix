@@ -2,23 +2,45 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
+
+    fenix = {
+      url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-  };
-  outputs = inputs:
-    inputs.flake-utils.lib.eachDefaultSystem (system: let
-      overlays = [(import inputs.rust-overlay)];
-      pkgs = import inputs.nixpkgs {
-        inherit system overlays;
-        config.allowUnfree = true;
+    naersk = {
+      url = "github:nix-community/naersk";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        fenix.follows = "fenix";
       };
+    };
+  };
+
+  outputs = {
+    nixpkgs,
+    flake-utils,
+    fenix,
+    naersk,
+    ...
+  }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [fenix.overlays.default];
+      };
+
+      naersk' = pkgs.callPackage naersk {};
     in {
-      devShell = import ./nix/shell.nix {inherit pkgs;};
+      devShell = import ./shell.nix {inherit pkgs;};
+
       packages = rec {
-        git-helper = pkgs.callPackage ./nix/package.nix {};
         default = git-helper;
+
+        git-helper = naersk'.buildPackage {
+          src = ./.;
+
+          meta.mainProgram = "git-helper";
+        };
       };
     });
 }

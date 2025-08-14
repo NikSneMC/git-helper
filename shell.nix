@@ -2,14 +2,18 @@
   pkgs ?
     import <nixpkgs> {
       overlays = [
-        (import (builtins.fetchTarball "https://github.com/oxalica/rust-overlay/archive/master.tar.gz"))
+        (import "${fetchTarball "https://github.com/nix-community/fenix/archive/main.tar.gz"}/overlay.nix")
       ];
     },
 }: let
   packages = with pkgs; [
-    (rust-bin.nightly.latest.default.override {
-      extensions = ["rust-src"];
-    })
+    (fenix.complete.withComponents [
+      "cargo"
+      "clippy"
+      "rust-src"
+      "rustc"
+      "rustfmt"
+    ])
 
     watchexec
     cargo-udeps
