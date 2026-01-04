@@ -4,41 +4,40 @@ use std::{
 };
 
 use dialoguer::Input;
-use email_address::EmailAddress;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
-pub struct UserEmail(pub String);
-impl FromStr for UserEmail {
+use crate::config::profile::keys::completion::PathCompletion;
+
+#[derive(Deserialize, Serialize, Clone)]
+pub struct AuthKey(pub String);
+impl FromStr for AuthKey {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if !EmailAddress::is_valid(s) {
-            return Err(format!("`{s}` is not a valid email address!"));
-        }
-
         Ok(Self(s.to_string()))
     }
 }
-impl Display for UserEmail {
+impl Display for AuthKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        format!("user.email: {}", self.0).fmt(f)
+        format!("key.auth: {}", self.0).fmt(f)
     }
 }
-impl UserEmail {
+impl AuthKey {
     pub fn input(default: Option<String>) -> dialoguer::Result<Self> {
         let input = Input::new()
-            .with_prompt("Input the user.email value")
+            .with_prompt("Input the key.auth value")
             .with_initial_text(default.unwrap_or_default())
+            .completion_with(&PathCompletion)
+            .allow_empty(true)
             .validate_with(|input: &String| Self::from_str(input).map(|_| ()))
             .interact_text()?;
 
         Ok(Self(input))
     }
 
-    pub fn from_param(email: Option<String>, default: Option<String>) -> Self {
-        email
-            .filter(|email| Self::from_str(email).is_ok())
+    pub fn from_param(auth_key: Option<String>, default: Option<String>) -> Self {
+        auth_key
+            .filter(|auth_key| Self::from_str(auth_key).is_ok())
             .map(Self)
             .unwrap_or_else(|| Self::input(default).unwrap())
     }

@@ -7,8 +7,8 @@ use crate::{
         profile::{
             Profile,
             alias::ProfileAlias,
-            credential::{Credential, username::CredentialUsername},
-            user::{User, email::UserEmail, name::UserName, signingkey::UserSigningKey},
+            keys::{Keys, auth::AuthKey, sign::SignKey},
+            user::{User, email::UserEmail, name::UserName},
         },
     },
 };
@@ -27,43 +27,39 @@ pub struct UpsertOptions {
     #[arg(short, long)]
     pub email: Option<String>,
 
+    /// path to the ssh key to use for auth
+    #[arg(short = 'k', long)]
+    pub auth_key: Option<String>,
+
     /// user.signingkey config value
     #[arg(short, long)]
-    pub signingkey: Option<String>,
-
-    /// credential.username config value
-    #[arg(short, long)]
-    pub username: Option<String>,
+    pub sign_key: Option<String>,
 }
 
 impl Command for UpsertOptions {
     fn execute(&self, mut config: Config) {
-        let alias = ProfileAlias::from_param(self.alias.clone(), &config, true);
+        let alias = ProfileAlias::from_param(self.alias.clone(), &config);
 
         let profile = config.profiles.get(&alias);
 
         let name = UserName::from_param(self.name.clone(), profile.map(|p| p.user.name.0.clone()));
         let email =
             UserEmail::from_param(self.email.clone(), profile.map(|p| p.user.email.0.clone()));
-        let signing_key = UserSigningKey::from_param(
-            self.signingkey.clone(),
-            profile.and_then(|p| p.user.signingkey.clone().map(|k| k.0)),
-        );
 
-        let username = CredentialUsername::from_param(
-            self.username.clone(),
-            profile.and_then(|p| p.credential.username.clone().map(|u| u.0)),
+        let auth = AuthKey::from_param(
+            self.auth_key.clone(),
+            profile.map(|p| p.keys.auth.0.clone()),
+        );
+        let sign = SignKey::from_param(
+            self.sign_key.clone(),
+            profile.and_then(|p| p.keys.sign.clone().map(|k| k.0)),
         );
 
         config.profiles.insert(
             alias,
             Profile {
-                user: User {
-                    name,
-                    email,
-                    signingkey: signing_key,
-                },
-                credential: Credential { username },
+                user: User { name, email },
+                keys: Keys { auth, sign },
             },
         );
         config.save().unwrap();

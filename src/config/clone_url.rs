@@ -1,18 +1,24 @@
 use std::str::FromStr;
 
 use dialoguer::Input;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
-use url::Url;
 
 #[derive(Deserialize, Serialize)]
 pub struct CloneUrl(pub String);
 impl FromStr for CloneUrl {
-    type Err = String;
+    type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Url::parse(s).map_err(|_| "Invalid repository url")?;
+        let ssh_regex = Regex::new(
+            r"^(?:ssh:\/\/)?[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+(?::|\/)[a-zA-Z0-9._\/-]+\.git$",
+        )
+        .unwrap();
 
-        Ok(Self(s.to_string()))
+        ssh_regex
+            .is_match(s)
+            .then_some(Self(s.to_string()))
+            .ok_or("Only ssh repository references are supported")
     }
 }
 impl CloneUrl {

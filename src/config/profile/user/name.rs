@@ -26,7 +26,7 @@ impl UserName {
             .with_prompt("Input the user.name value")
             .with_initial_text(default.unwrap_or_default())
             .validate_with(|input: &String| Self::from_str(input).map(|_| ()))
-            .interact()?;
+            .interact_text()?;
 
         Ok(Self(input))
     }

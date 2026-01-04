@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, path::Path};
 
 use clap::Parser;
 use git2::{Cred, FetchOptions, RemoteCallbacks, build::RepoBuilder};
@@ -21,7 +21,7 @@ pub struct CloneOptions {
 
 impl Command for CloneOptions {
     fn execute(&self, config: Config) {
-        let alias = ProfileAlias::from_param(self.alias.clone(), &config, false);
+        let alias = ProfileAlias::from_param(self.alias.clone(), &config);
         let profile = match config.profiles.get(&alias) {
             None => {
                 println!("Profile with name `{}` does not exist", alias.0);
@@ -31,13 +31,14 @@ impl Command for CloneOptions {
         };
 
         let mut cb = RemoteCallbacks::new();
-        if let Some(username) = &profile.credential.username {
-            cb.credentials(|url, _username_from_url, _allowed_types| {
-                let global_conf =
-                    git2::Config::open_default().expect("Global config to open successfully");
-                Cred::credential_helper(&global_conf, url, Some(&username.0))
-            });
-        }
+        cb.credentials(|_url, username_from_url, _allowed_types| {
+            let keypath = profile
+                .keys
+                .auth
+                .0
+                .replacen("~", &env::var("HOME").unwrap(), 1);
+            Cred::ssh_key(username_from_url.unwrap(), None, Path::new(&keypath), None)
+        });
         let mut fo = FetchOptions::new();
         fo.remote_callbacks(cb);
         let mut rb = RepoBuilder::new();

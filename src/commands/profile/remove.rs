@@ -14,7 +14,7 @@ pub struct RemoveOptions {
 
 impl Command for RemoveOptions {
     fn execute(&self, mut config: Config) {
-        let alias = ProfileAlias::from_param(self.alias.clone(), &config, false);
+        let alias = ProfileAlias::from_param(self.alias.clone(), &config);
         if config.profiles.remove_entry(&alias).is_none() {
             println!("Profile with name `{}` does not exist", alias.0);
             return;
