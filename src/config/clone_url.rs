@@ -15,10 +15,15 @@ impl FromStr for CloneUrl {
         )
         .unwrap();
 
-        ssh_regex
+        let mut url = ssh_regex
             .is_match(s)
-            .then_some(Self(s.to_string()))
-            .ok_or("Only ssh repository references are supported")
+            .then_some(s.to_string())
+            .ok_or("Only ssh repository references are supported")?;
+
+        if let Some(stripped) = url.strip_prefix("ssh://") {
+            url = stripped.to_string();
+        }
+        Ok(Self(url))
     }
 }
 impl CloneUrl {
