@@ -3,9 +3,14 @@ use std::{
     fmt::{self, Display},
 };
 
+use anyhow::Context as _;
+use git2::Repository;
 use serde::{Deserialize, Serialize};
 
-use crate::config::profile::{keys::Keys, user::User};
+use crate::{
+    commands::CommandResult,
+    config::profile::{keys::Keys, user::User},
+};
 
 pub mod alias;
 pub mod keys;
@@ -24,12 +29,12 @@ impl Display for Profile {
     }
 }
 impl Profile {
-    pub fn apply(&self) -> Result<(), git2::Error> {
-        let current_dir = env::current_dir().expect("Current dir to be valid");
-        let mut config = git2::Repository::open(current_dir)
-            .expect("Current folder to be a valid git repository")
+    pub fn apply(&self) -> CommandResult {
+        let current_dir = env::current_dir().context("while getting current directory")?;
+        let mut config = Repository::open(current_dir)
+            .context("while opening repository in the current folder")?
             .config()
-            .expect("Repo config to be available");
+            .context("while getting repo config")?;
 
         config.set_str("user.name", &self.user.name.0)?;
         config.set_str("user.email", &self.user.email.0)?;

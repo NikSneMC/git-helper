@@ -30,7 +30,7 @@ impl Default for Config {
         Self {
             version: crate_version!().to_string(),
             base_dir: home_dir()
-                .context("Expected home_dir to be Some")
+                .context("while getting the home dir")
                 .unwrap()
                 .join(Self::DEFAULT_PROJECTS_DIR_NAME),
             profiles: HashMap::default(),
@@ -50,29 +50,31 @@ impl Config {
 
     pub fn path() -> Result<PathBuf> {
         Ok(home_dir()
-            .context("Expected home_dir to be Some")?
+            .context("while getting home dir")?
             .join(Self::CONFIG_NAME))
     }
 
     pub fn save(&self) -> Result<()> {
         let config_path = Self::path()?;
-        let contents = toml::to_string_pretty(&self).context("Failed to serialize config")?;
-        fs::write(&config_path, contents).context("Failed to save config")?;
+        let contents = toml::to_string_pretty(&self).context("while serializing config")?;
+        fs::write(&config_path, contents).context("while writing to the config file")?;
         Ok(())
     }
 
     pub fn init() -> Result<()> {
-        Self::default().save()?;
+        Self::default()
+            .save()
+            .context("while saving the default config")?;
         Ok(())
     }
 
     pub fn load() -> Result<Self> {
         let config_path = Self::path()?;
         if !config_path.exists() {
-            Self::init()?;
+            Self::init().context("while initing config")?;
         }
         let config_str = fs::read_to_string(&config_path).context("Failed to read config file")?;
-        let config = toml::from_str::<Self>(config_str.leak()).context("Failed to parse config")?;
-        Ok(config)
+
+        toml::from_str::<Self>(config_str.leak()).context("Failed to parse config")
     }
 }

@@ -1,7 +1,8 @@
+use anyhow::Context;
 use clap::Parser;
 
 use crate::{
-    commands::Command,
+    commands::{Command, CommandResult},
     config::{
         Config,
         profile::{
@@ -37,7 +38,7 @@ pub struct UpsertOptions {
 }
 
 impl Command for UpsertOptions {
-    fn execute(&self, mut config: Config) {
+    fn execute(&self, mut config: Config) -> CommandResult {
         let alias = ProfileAlias::from_param(self.alias.clone(), &config);
 
         let profile = config.profiles.get(&alias);
@@ -62,7 +63,9 @@ impl Command for UpsertOptions {
                 keys: Keys { auth, sign },
             },
         );
-        config.save().unwrap();
+        config.save().context("while saving config")?;
         println!("Profile saved successfully");
+
+        Ok(())
     }
 }

@@ -1,12 +1,15 @@
 use clap::Parser;
 
-use crate::{commands::Command, config::Config};
+use crate::{
+    commands::{Command, CommandResult},
+    config::Config,
+};
 
 #[derive(Parser)]
 pub struct ListOptions {}
 
 impl Command for ListOptions {
-    fn execute(&self, config: Config) {
+    fn execute(&self, config: Config) -> CommandResult {
         let profiles = config
             .profiles
             .iter()
@@ -14,5 +17,7 @@ impl Command for ListOptions {
             .collect::<Vec<_>>()
             .join("\n");
         println!("{profiles}");
+
+        Ok(())
     }
 }

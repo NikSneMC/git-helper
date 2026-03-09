@@ -1,10 +1,11 @@
+use anyhow::Context;
 use clap::Parser;
 
 mod commands;
 mod config;
 
 use crate::{
-    commands::{Command as _, Commands},
+    commands::{Command as _, CommandResult, Commands},
     config::Config,
 };
 
@@ -14,8 +15,9 @@ struct Cli {
     command: Commands,
 }
 
-fn main() {
+fn main() -> CommandResult {
     let args = Cli::parse();
-    let config = Config::load().expect("failed to load config file");
-    args.command.execute(config);
+    let config = Config::load().context("while loading the config file")?;
+
+    args.command.execute(config)
 }

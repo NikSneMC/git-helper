@@ -2,7 +2,7 @@ use clap::Subcommand;
 
 use crate::{
     commands::{
-        Command,
+        Command, CommandResult,
         profile::{
             apply::ApplyOptions, list::ListOptions, remove::RemoveOptions, upsert::UpsertOptions,
         },
@@ -32,7 +32,7 @@ pub enum ProfileSubCommands {
 }
 
 impl Command for ProfileSubCommands {
-    fn execute(&self, config: Config) {
+    fn execute(&self, config: Config) -> CommandResult {
         match self {
             Self::Upsert(upsert_command) => upsert_command.execute(config),
             Self::List(list_command) => list_command.execute(config),
