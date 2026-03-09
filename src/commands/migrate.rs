@@ -25,23 +25,27 @@ impl Command for MigrateOptions {
         let repo = Repository::open(&current_dir)
             .context("while opening a git repository in the current directory")?;
 
+        let mut remote_url = None;
+
         if let Ok(remote) = repo.find_remote("origin")
-            && let Some(mut remote_url) = remote.url()
-            && remote_url.starts_with("http")
+            && let Some(mut remote_url_str) = remote.url()
         {
-            if let Some(stripped) = remote_url.strip_prefix("https://") {
-                remote_url = stripped;
+            if remote_url_str.starts_with("http") {
+                if let Some(stripped) = remote_url_str.strip_prefix("https://") {
+                    remote_url_str = stripped;
+                }
+
+                let (host, path) = remote_url_str
+                    .split_once("/")
+                    .context("while splitting remote url")?;
+
+                let git_user = self.git_user.clone().unwrap_or_else(|| "git".to_string());
+
+                let remote_url_string = format!("{git_user}@{host}:{path}.git");
+                remote_url = Some(remote_url_string);
+            } else {
+                remote_url = Some(remote_url_str.to_string());
             }
-
-            let (host, path) = remote_url
-                .split_once("/")
-                .context("while splitting remote url")?;
-
-            let git_user = self.git_user.clone().unwrap_or_else(|| "git".to_string());
-
-            let remote_url = format!("{git_user}@{host}:{path}.git");
-            repo.remote_set_url("origin", &remote_url)
-                .context("while setting remote url")?;
         }
 
         let alias = ProfileAlias::from_param(self.alias.clone(), &config);
@@ -52,8 +56,6 @@ impl Command for MigrateOptions {
             }
             Some(profile) => profile,
         };
-
-        profile.apply().context("while applying profile")?;
 
         if !repo.is_bare() && !repo.is_worktree() {
             let entries: Vec<_> = current_dir
@@ -112,6 +114,13 @@ impl Command for MigrateOptions {
                     .context("while moving git from the tmp to the worktree dir")?;
             }
         }
+
+        if let Some(remote_url) = &remote_url {
+            repo.remote_set_url("origin", remote_url)
+                .context("while setting remote url")?;
+        }
+
+        profile.apply().context("while applying profile")?;
 
         Ok(())
     }
