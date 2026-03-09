@@ -1,4 +1,4 @@
-use std::{env, path::Path, time::Duration};
+use std::{env, path::Path, process, time::Duration};
 
 use anyhow::Context as _;
 use clap::Parser;
@@ -76,6 +76,12 @@ impl Command for CloneOptions {
         spinner.finish_with_message(format!(
             "Repository was cloned to `{repo_path_str}` successfully"
         ));
+
+        // zoxide is not required so we don't care about command failure
+        let _ = process::Command::new("zoxide")
+            .arg("add")
+            .arg(repo_path_str)
+            .output();
 
         Ok(())
     }
