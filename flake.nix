@@ -1,46 +1,23 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    flake-compat.url = "github:NixOS/flake-compat";
+    systems.url = "github:nix-systems/default";
 
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
     };
+
     naersk = {
       url = "github:nix-community/naersk";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        fenix.follows = "fenix";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = {
-    nixpkgs,
-    flake-utils,
-    fenix,
-    naersk,
-    ...
-  }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [fenix.overlays.default];
-      };
-
-      naersk' = pkgs.callPackage naersk {};
-    in {
-      devShell = import ./shell.nix {inherit pkgs;};
-
-      packages = rec {
-        default = git-helper;
-
-        git-helper = naersk'.buildPackage {
-          src = ./.;
-
-          meta.mainProgram = "git-helper";
-        };
-      };
-    });
+  outputs = inputs:
+    inputs.flake-parts.lib.mkFlake {inherit inputs;} {
+      systems = import inputs.systems;
+      imports = [./nix];
+    };
 }
