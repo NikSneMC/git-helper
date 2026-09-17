@@ -50,8 +50,10 @@ impl Command for CloneOptions {
         rb.fetch_options(fo);
 
         let git_url = CloneUrl::from_param(self.url.clone()).0;
-        let (_, url) = git_url.split_once("@").context("while splitting git url")?;
-        let (_, mut url) = url.split_once(":").context("while splitting url")?;
+        let mut url = git_url
+            .split("/")
+            .last()
+            .context("while splitting git url")?;
         if let Some(stripped) = url.strip_suffix(".git") {
             url = stripped;
         }
