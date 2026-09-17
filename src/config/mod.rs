@@ -21,7 +21,6 @@ use crate::config::profile::alias::ProfileAlias;
 #[derive(Deserialize, Serialize)]
 pub struct Config {
     pub version: String,
-    pub base_dir: PathBuf,
     pub profiles: HashMap<ProfileAlias, Profile>,
 }
 
@@ -29,10 +28,6 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             version: crate_version!().to_string(),
-            base_dir: home_dir()
-                .context("while getting the home dir")
-                .unwrap()
-                .join(Self::DEFAULT_PROJECTS_DIR_NAME),
             profiles: HashMap::default(),
         }
     }
@@ -45,7 +40,6 @@ impl Display for Config {
 }
 
 impl Config {
-    const DEFAULT_PROJECTS_DIR_NAME: &'static str = "Projects";
     const CONFIG_NAME: &'static str = ".git-helper.toml";
 
     pub fn path() -> Result<PathBuf> {

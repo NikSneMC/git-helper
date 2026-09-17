@@ -14,7 +14,7 @@ pub struct User {
 }
 impl Display for User {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let lines = vec![self.name.to_string(), self.email.to_string()];
+        let lines = [self.name.to_string(), self.email.to_string()];
         lines
             .iter()
             .map(|l| format!("- {l}"))

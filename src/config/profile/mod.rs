@@ -38,7 +38,7 @@ impl Profile {
 
         config.set_str("user.name", &self.user.name.0)?;
         config.set_str("user.email", &self.user.email.0)?;
-        config.set_str("core.sshCommand", &format!("ssh -i {}", &self.keys.auth.0))?;
+        config.set_str("core.sshCommand", &format!("ssh -i {}", self.keys.auth.0))?;
 
         if let Some(sign_key) = &self.keys.sign {
             config.set_str("user.signingkey", &sign_key.0)?;

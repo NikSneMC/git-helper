@@ -51,13 +51,13 @@ impl Command for CloneOptions {
 
         let git_url = CloneUrl::from_param(self.url.clone()).0;
         let (_, url) = git_url.split_once("@").context("while splitting git url")?;
-        let (host, mut url) = url.split_once(":").context("while splitting url")?;
+        let (_, mut url) = url.split_once(":").context("while splitting url")?;
         if let Some(stripped) = url.strip_suffix(".git") {
             url = stripped;
         }
 
         let current_dir = env::current_dir().context("while getting current directory")?;
-        let repo_path = config.base_dir.join(host).join(url);
+        let repo_path = current_dir.join(url);
         let repo_path_str = repo_path.to_string_lossy().to_string();
 
         let spinner = ProgressBar::new_spinner()

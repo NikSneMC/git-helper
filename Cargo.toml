@@ -1,6 +1,6 @@
 [package]
 name = "git-helper"
-version = "0.5.2"
+version = "0.6.0"
 authors = ["NikSne <commits@niksne.ru>"]
 edition = "2024"
 
