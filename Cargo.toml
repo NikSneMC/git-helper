@@ -4,14 +4,27 @@ version = "0.6.1"
 authors = ["NikSne <commits@niksne.ru>"]
 edition = "2024"
 
+[lib]
+name = "git_helper"
+path = "src/lib.rs"
+
+[[bin]]
+name = "git-helper"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[features]
+default = ["cli"]
+cli = ["dep:clap", "dep:dialoguer", "dep:indicatif"]
+
 [dependencies]
 anyhow = "1.0"
-clap = { version = "4.5", features = ["derive", "cargo"] }
-dialoguer = { version = "0.11", features = ["completion"] }
 dirs = "6.0"
 git2 = "0.20"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.9"
 email_address = "0.2"
 regex = "1.10"
-indicatif = "0.18.4"
+clap = { version = "4.5", features = ["derive", "cargo"], optional = true }
+dialoguer = { version = "0.11", features = ["completion"], optional = true }
+indicatif = { version = "0.18.4", optional = true }

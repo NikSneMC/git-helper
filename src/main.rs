@@ -1,10 +1,7 @@
 use anyhow::Context;
 use clap::Parser;
 
-mod commands;
-mod config;
-
-use crate::{
+use git_helper::{
     commands::{Command as _, CommandResult, Commands},
     config::Config,
 };

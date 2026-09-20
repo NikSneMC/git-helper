@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+#[cfg(feature = "cli")]
 use dialoguer::Input;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -27,6 +28,7 @@ impl FromStr for CloneUrl {
     }
 }
 impl CloneUrl {
+    #[cfg(feature = "cli")]
     pub fn input() -> dialoguer::Result<Self> {
         let input = Input::new()
             .with_prompt("Input the repo url")
@@ -36,6 +38,7 @@ impl CloneUrl {
         Ok(Self(input))
     }
 
+    #[cfg(feature = "cli")]
     pub fn from_param(name: Option<String>) -> Self {
         name.filter(|name| Self::from_str(name).is_ok())
             .map(Self)

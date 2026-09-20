@@ -7,7 +7,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use clap::crate_version;
+
 use dirs::home_dir;
 use serde::{Deserialize, Serialize};
 
@@ -27,7 +27,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            version: crate_version!().to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
             profiles: HashMap::default(),
         }
     }

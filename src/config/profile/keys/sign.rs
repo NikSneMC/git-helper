@@ -3,9 +3,11 @@ use std::{
     str::FromStr,
 };
 
+#[cfg(feature = "cli")]
 use dialoguer::Input;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "cli")]
 use crate::config::profile::keys::completion::PathCompletion;
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -23,6 +25,7 @@ impl Display for SignKey {
     }
 }
 impl SignKey {
+    #[cfg(feature = "cli")]
     pub fn input(default: Option<String>) -> dialoguer::Result<Option<Self>> {
         let input = Input::new()
             .with_prompt("Input the key.sign value")
@@ -35,6 +38,7 @@ impl SignKey {
         Ok((!input.is_empty()).then_some(Self(input)))
     }
 
+    #[cfg(feature = "cli")]
     pub fn from_param(sign_key: Option<String>, default: Option<String>) -> Option<Self> {
         sign_key
             .filter(|sign_key| Self::from_str(sign_key).is_ok())

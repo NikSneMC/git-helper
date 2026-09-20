@@ -1,11 +1,12 @@
-use std::{
-    collections::hash_map::Keys,
-    fmt::{self, Display},
-};
+use std::fmt::{self, Display};
+#[cfg(feature = "cli")]
+use std::collections::hash_map::Keys;
 
+#[cfg(feature = "cli")]
 use dialoguer::{Completion, Input};
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "cli")]
 use crate::config::{Config, profile::Profile};
 
 #[derive(Deserialize, Serialize, PartialEq, Eq, Hash)]
@@ -25,6 +26,7 @@ impl ProfileAlias {
         Ok(Self(s.to_string()))
     }
 
+    #[cfg(feature = "cli")]
     pub fn input(config: &Config) -> dialoguer::Result<Self> {
         Ok(Self(
             Input::new()
@@ -35,6 +37,7 @@ impl ProfileAlias {
         ))
     }
 
+    #[cfg(feature = "cli")]
     pub fn from_param(alias: Option<String>, config: &Config) -> ProfileAlias {
         alias
             .filter(|alias| ProfileAlias::from_str(alias).is_ok())
@@ -43,6 +46,7 @@ impl ProfileAlias {
     }
 }
 
+#[cfg(feature = "cli")]
 struct ProfileAliasCompletion<I>
 where
     I: Iterator,
@@ -50,6 +54,7 @@ where
     options: I,
 }
 
+#[cfg(feature = "cli")]
 impl<'c> From<&'c Config> for ProfileAliasCompletion<Keys<'c, ProfileAlias, Profile>> {
     fn from(config: &'c Config) -> Self {
         Self {
@@ -58,6 +63,7 @@ impl<'c> From<&'c Config> for ProfileAliasCompletion<Keys<'c, ProfileAlias, Prof
     }
 }
 
+#[cfg(feature = "cli")]
 impl<'i, I> Completion for ProfileAliasCompletion<I>
 where
     I: Iterator<Item = &'i ProfileAlias> + Clone,

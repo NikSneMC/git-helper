@@ -3,9 +3,11 @@ use std::{
     str::FromStr,
 };
 
+#[cfg(feature = "cli")]
 use dialoguer::Input;
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "cli")]
 use crate::config::profile::keys::completion::PathCompletion;
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -23,6 +25,7 @@ impl Display for AuthKey {
     }
 }
 impl AuthKey {
+    #[cfg(feature = "cli")]
     pub fn input(default: Option<String>) -> dialoguer::Result<Self> {
         let input = Input::new()
             .with_prompt("Input the key.auth value")
@@ -35,6 +38,7 @@ impl AuthKey {
         Ok(Self(input))
     }
 
+    #[cfg(feature = "cli")]
     pub fn from_param(auth_key: Option<String>, default: Option<String>) -> Self {
         auth_key
             .filter(|auth_key| Self::from_str(auth_key).is_ok())

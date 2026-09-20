@@ -3,6 +3,7 @@ use std::{
     str::FromStr,
 };
 
+#[cfg(feature = "cli")]
 use dialoguer::Input;
 use email_address::EmailAddress;
 use serde::{Deserialize, Serialize};
@@ -26,6 +27,7 @@ impl Display for UserEmail {
     }
 }
 impl UserEmail {
+    #[cfg(feature = "cli")]
     pub fn input(default: Option<String>) -> dialoguer::Result<Self> {
         let input = Input::new()
             .with_prompt("Input the user.email value")
@@ -36,6 +38,7 @@ impl UserEmail {
         Ok(Self(input))
     }
 
+    #[cfg(feature = "cli")]
     pub fn from_param(email: Option<String>, default: Option<String>) -> Self {
         email
             .filter(|email| Self::from_str(email).is_ok())

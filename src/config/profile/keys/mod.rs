@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::config::profile::keys::{auth::AuthKey, sign::SignKey};
 
 pub mod auth;
+#[cfg(feature = "cli")]
 pub mod completion;
 pub mod sign;
 

@@ -1,24 +1,21 @@
-use std::{env, path::Path, process, time::Duration};
+use std::{env, process, time::Duration};
 
 use anyhow::Context as _;
 use clap::Parser;
-use git2::{
-    Cred, FetchOptions, RemoteCallbacks, Repository, WorktreeAddOptions, build::RepoBuilder,
-};
+use git2::{Repository, WorktreeAddOptions};
 use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::{
     commands::{Command, CommandResult},
     config::{Config, clone_url::CloneUrl, profile::alias::ProfileAlias},
+    repo,
 };
 
 #[derive(Parser)]
 pub struct CloneOptions {
-    /// Repository url to clone
     #[arg(short, long)]
     pub url: Option<String>,
 
-    /// Profile name (alias) to use
     #[arg(short, long)]
     pub alias: Option<String>,
 }
@@ -33,21 +30,6 @@ impl Command for CloneOptions {
             }
             Some(profile) => profile,
         };
-
-        let mut cb = RemoteCallbacks::new();
-        cb.credentials(|_url, username_from_url, _allowed_types| {
-            let keypath = profile
-                .keys
-                .auth
-                .0
-                .replacen("~", &env::var("HOME").unwrap(), 1);
-            Cred::ssh_key(username_from_url.unwrap(), None, Path::new(&keypath), None)
-        });
-        let mut fo = FetchOptions::new();
-        fo.remote_callbacks(cb);
-        let mut rb = RepoBuilder::new();
-        rb.bare(true);
-        rb.fetch_options(fo);
 
         let git_url = CloneUrl::from_param(self.url.clone()).0;
         let mut url = git_url
@@ -67,11 +49,11 @@ impl Command for CloneOptions {
             .with_style(ProgressStyle::default_spinner().tick_chars("⣾⣽⣻⢿⡿⣟⣯⣷ "));
         spinner.enable_steady_tick(Duration::from_millis(100));
 
-        rb.clone(&git_url, &repo_path.join(".git"))
+        repo::clone(profile, &git_url, &repo_path, true)
             .context("while cloning repository")?;
-
-        env::set_current_dir(&repo_path).context("while changing the current directory")?;
-        profile.apply().context("while applying profile")?;
+        profile
+            .apply_at(&repo_path)
+            .context("while applying profile")?;
 
         let repo = Repository::open(&repo_path)
             .context("while opening git repository in the current directory")?;
@@ -93,13 +75,10 @@ impl Command for CloneOptions {
         repo.worktree(worktree_name, &worktree_path, Some(&opts))
             .context("while creating a new git worktree")?;
 
-        // zoxide is not required so we don't care about command failure
         let _ = process::Command::new("zoxide")
             .arg("add")
             .arg(&repo_path_str)
             .output();
-
-        env::set_current_dir(&current_dir).context("while changing the current directory")?;
 
         spinner.finish_with_message(format!(
             "Repository was cloned to `{repo_path_str}` successfully"

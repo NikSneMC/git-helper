@@ -1,16 +1,13 @@
 use std::{
-    env,
     fmt::{self, Display},
+    path::Path,
 };
 
-use anyhow::Context as _;
+use anyhow::{Context, Result};
 use git2::Repository;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    commands::CommandResult,
-    config::profile::{keys::Keys, user::User},
-};
+use crate::config::profile::{keys::Keys, user::User};
 
 pub mod alias;
 pub mod keys;
@@ -29,10 +26,9 @@ impl Display for Profile {
     }
 }
 impl Profile {
-    pub fn apply(&self) -> CommandResult {
-        let current_dir = env::current_dir().context("while getting current directory")?;
-        let mut config = Repository::open(current_dir)
-            .context("while opening repository in the current folder")?
+    pub fn apply_at(&self, path: &Path) -> Result<()> {
+        let mut config = Repository::open(path)
+            .context("while opening the repository")?
             .config()
             .context("while getting repo config")?;
 
@@ -44,5 +40,11 @@ impl Profile {
             config.set_str("user.signingkey", &sign_key.0)?;
         }
         Ok(())
+    }
+
+    pub fn apply(&self) -> Result<()> {
+        let current_dir =
+            std::env::current_dir().context("while getting current directory")?;
+        self.apply_at(&current_dir)
     }
 }

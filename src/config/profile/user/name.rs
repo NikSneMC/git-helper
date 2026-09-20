@@ -3,6 +3,7 @@ use std::{
     str::FromStr,
 };
 
+#[cfg(feature = "cli")]
 use dialoguer::Input;
 use serde::{Deserialize, Serialize};
 
@@ -21,6 +22,7 @@ impl Display for UserName {
     }
 }
 impl UserName {
+    #[cfg(feature = "cli")]
     pub fn input(default: Option<String>) -> dialoguer::Result<Self> {
         let input = Input::new()
             .with_prompt("Input the user.name value")
@@ -31,6 +33,7 @@ impl UserName {
         Ok(Self(input))
     }
 
+    #[cfg(feature = "cli")]
     pub fn from_param(name: Option<String>, default: Option<String>) -> Self {
         name.filter(|name| Self::from_str(name).is_ok())
             .map(Self)
